@@ -1,0 +1,370 @@
+'use client';
+import { FileUploaderMinimal } from '@uploadcare/react-uploader/next';
+import '@uploadcare/react-uploader/core.css';
+import { FormEvent, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import Image from 'next/image';
+import { FontEnum, SubtitlePositionEnum } from '@/validators';
+
+const GenerateCaptionPage = () => {
+	const [videoUrl, setVideoUrl] = useState<string>('');
+	const [transcriptUrl, setTranscriptUrl] = useState<string>('');
+	const [outputVideo, setOutputVideo] = useState<string>('');
+	const [loading, setLoading] = useState<boolean>(false);
+	const [processingVideo, setProcessingVideo] = useState<boolean>(false);
+
+	const [formData, setFormData] = useState({
+		font: FontEnum[2],
+		color: 'white',
+		kerning: -5,
+		opacity: 0,
+		MaxChars: 20,
+		fontsize: 7,
+		translate: false,
+		output_video: true,
+		stroke_color: 'black',
+		stroke_width: 2.6,
+		right_to_left: false,
+		subs_position: SubtitlePositionEnum[0],
+		highlight_color: 'yellow',
+		video_file_input: '',
+		transcript_file_input: '',
+		output_transcript: false,
+	});
+
+	const handleChange = (e: React.ChangeEvent<HTMLFormElement>) => {
+		const { name, value, type, checked } = e.target;
+		setFormData((prevData) => ({
+			...prevData,
+			[name]: type === 'checkbox' ? checked : value,
+		}));
+	};
+
+	const fetchVideoStatus = async (replicateId: string, cleanUp: () => void) => {
+		try {
+			const response = await fetch('/api/polling?replicateId=' + replicateId, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+			const data = await response.json();
+			console.log('video fetched data -> ', data);
+			if (data.result.outputVideoUrl) {
+				cleanUp();
+				setProcessingVideo(false);
+				setOutputVideo(data.result.outputVideoUrl);
+			}
+		} catch (error) {
+			console.log('Error fetching video status: ', error);
+		}
+	};
+
+	const handlePolling = async (replicateId: string) => {
+		setProcessingVideo(true);
+		const intervalId = setInterval(() => {
+			fetchVideoStatus(replicateId, () => clearInterval(intervalId));
+		}, 5000);
+	};
+
+	const handleProcessVideo = async (e: FormEvent) => {
+		e.preventDefault();
+		if (!videoUrl) {
+			toast.error('Please upload a video!');
+			return;
+		}
+		console.log('formData-> ', {
+			...formData,
+			video_file_input: videoUrl,
+			transcript_file_input: transcriptUrl,
+		});
+		try {
+			setLoading(true);
+			const response = await fetch('/api/generate-caption', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					...formData,
+					video_file_input: videoUrl,
+					transcript_file_input: transcriptUrl,
+				}),
+			});
+			const data = await response.json();
+			toast.success('Request queued!');
+			console.log('data-> ', data);
+			handlePolling(data.result.replicateId);
+		} catch (error) {
+			console.log('Error processing video: ', error);
+			toast.error('Error processing video');
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<div className='flex min-h-[calc(100vh-100px)] w-full flex-col items-center mt-[100px]'>
+			<div className='rounded-xl p-10 max-md:w-[90%] w-[40%] bg-white shadow-md border'>
+				<h1 className='text-3xl text-grad mb-10 text-center'>
+					Generate Caption
+				</h1>
+				<form className='flex flex-col gap-5' onSubmit={handleProcessVideo}>
+					<label>
+						Upload Video: <span className='text-red-600'>*</span>
+						<FileUploaderMinimal
+							useCloudImageEditor={false}
+							sourceList='local, url, camera, gdrive'
+							classNameUploader='uc-light uc-red'
+							pubkey='302cebe52af5d96538c7'
+							accept='.mp4, .mov'
+							multiple={false}
+							maxLocalFileSizeBytes={100000000}
+							onFileUploadSuccess={(vid) => setVideoUrl(vid.cdnUrl)}
+						/>
+					</label>
+
+					<label>
+						Transcript File Input:
+						<FileUploaderMinimal
+							useCloudImageEditor={false}
+							sourceList='local, url, camera, gdrive'
+							classNameUploader='uc-light uc-red'
+							pubkey='302cebe52af5d96538c7'
+							accept='.txt'
+							multiple={false}
+							maxLocalFileSizeBytes={100000000}
+							onFileUploadSuccess={(file) => setTranscriptUrl(file.cdnUrl)}
+						/>
+					</label>
+
+					<label className='flex flex-col'>
+						Font:
+						<select name='font' value={formData.font} onChange={handleChange}>
+							{FontEnum.map((font) => {
+								return (
+									<option key={font} value={font}>
+										{font}
+									</option>
+								);
+							})}
+						</select>
+					</label>
+
+					<label className='flex flex-col'>
+						Font Size:
+						<input
+							type='number'
+							name='fontsize'
+							value={formData.fontsize}
+							onChange={handleChange}
+						/>
+					</label>
+
+					<label className='flex flex-col'>
+						Color:
+						<input
+							type='text'
+							name='color'
+							value={formData.color}
+							onChange={handleChange}
+						/>
+					</label>
+
+					<label className='flex flex-col'>
+						Stroke Color:
+						<input
+							type='text'
+							name='stroke_color'
+							value={formData.stroke_color}
+							onChange={handleChange}
+						/>
+					</label>
+
+					<label className='flex flex-col'>
+						Stroke Width:
+						<input
+							type='number'
+							name='stroke_width'
+							value={formData.stroke_width}
+							onChange={handleChange}
+						/>
+					</label>
+
+					<label className='flex flex-col'>
+						Subtitles Position:
+						<select
+							name='subs_position'
+							value={formData.subs_position}
+							onChange={handleChange}
+						>
+							{SubtitlePositionEnum.map((position) => {
+								return (
+									<option key={position} value={position}>
+										{position}
+									</option>
+								);
+							})}
+						</select>
+					</label>
+
+					<label className='flex flex-col'>
+						Highlight Color:
+						<input
+							type='text'
+							name='highlight_color'
+							value={formData.highlight_color}
+							onChange={handleChange}
+						/>
+					</label>
+
+					<label className='flex flex-col'>
+						Kerning:
+						<input
+							type='number'
+							name='kerning'
+							value={formData.kerning}
+							onChange={handleChange}
+						/>
+					</label>
+
+					<label className='flex flex-col'>
+						Opacity:
+						<input
+							type='number'
+							step='0.1'
+							name='opacity'
+							value={formData.opacity}
+							onChange={handleChange}
+						/>
+					</label>
+
+					<label className='flex flex-col'>
+						Max Characters:
+						<input
+							type='number'
+							name='MaxChars'
+							value={formData.MaxChars}
+							onChange={handleChange}
+						/>
+					</label>
+					<div className='flex flex-col gap-4'>
+						<div className='flex items-start gap-2'>
+							<input
+								type='checkbox'
+								name='translate'
+								checked={formData.translate}
+								onChange={handleChange}
+								className='w-5 h-5 mt-1'
+							/>
+							<div>
+								<label htmlFor='translate' className='font-medium'>
+									Translate
+								</label>
+								<p className='text-sm text-gray-500'>
+									Translate the subtitles to English.
+								</p>
+							</div>
+						</div>
+
+						<div className='flex items-start gap-2'>
+							<input
+								type='checkbox'
+								name='output_video'
+								checked={formData.output_video}
+								onChange={handleChange}
+								className='w-5 h-5 mt-1'
+							/>
+							<div>
+								<label htmlFor='output_video' className='font-medium'>
+									Output Video
+								</label>
+								<p className='text-sm text-gray-500'>
+									If selected, the video will include subtitles.
+								</p>
+							</div>
+						</div>
+
+						<div className='flex items-start gap-2'>
+							<input
+								type='checkbox'
+								name='output_transcript'
+								checked={formData.output_transcript}
+								onChange={handleChange}
+								className='w-5 h-5 mt-1'
+							/>
+							<div>
+								<label htmlFor='output_transcript' className='font-medium'>
+									Output Transcript
+								</label>
+								<p className='text-sm text-gray-500'>
+									If selected, a transcript file will be generated.
+								</p>
+							</div>
+						</div>
+
+						<div className='flex items-start gap-2'>
+							<input
+								type='checkbox'
+								name='right_to_left'
+								checked={formData.right_to_left}
+								onChange={handleChange}
+								className='w-5 h-5 mt-1'
+							/>
+							<div>
+								<label htmlFor='right_to_left' className='font-medium'>
+									Right to Left Subtitles
+								</label>
+								<p className='text-sm text-gray-500'>
+									For right-to-left languages (only Arial fonts supported).
+								</p>
+							</div>
+						</div>
+					</div>
+
+					<button disabled={loading} className='btn-primary mt-4 text-center'>
+						{loading ? (
+							<Image
+								className='animate-spin mx-auto'
+								src='/loader.svg'
+								width={36}
+								height={36}
+								alt='loader'
+							/>
+						) : (
+							'Process Video'
+						)}
+					</button>
+				</form>
+			</div>
+			{processingVideo ? (
+				<div className='my-10'>
+					<Image
+						className='mx-auto mb-1 text-center animate-spin'
+						src={'/loader.png'}
+						alt='loader'
+						height={67}
+						width={67}
+					/>
+					<p className='text-xl'>Processing</p>
+				</div>
+			) : (
+				outputVideo &&
+				videoUrl && (
+					<div className='mt-10 flex flex-wrap w-full items-center justify-center gap-10'>
+						<div className='w-[45%]'>
+							<h2 className='text-xl font-bold'>Input Video:</h2>
+							<video src={videoUrl} controls className='my-3 rounded-xl' />
+						</div>
+						<div className='w-[45%]'>
+							<h2 className='text-xl font-bold'>Output Video:</h2>
+							<video src={outputVideo} controls className='my-3 rounded-xl' />
+						</div>
+					</div>
+				)
+			)}
+		</div>
+	);
+};
+
+export default GenerateCaptionPage;
