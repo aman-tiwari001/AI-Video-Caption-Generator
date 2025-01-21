@@ -32,8 +32,10 @@ const GenerateCaptionPage = () => {
 		output_transcript: false,
 	});
 
-	const handleChange = (e: React.ChangeEvent<HTMLFormElement>) => {
-		const { name, value, type, checked } = e.target;
+	const handleChange = (
+		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+	) => {
+		const { name, value, type, checked } = e.target as HTMLInputElement;
 		setFormData((prevData) => ({
 			...prevData,
 			[name]: type === 'checkbox' ? checked : value,
