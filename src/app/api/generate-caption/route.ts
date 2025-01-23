@@ -67,9 +67,9 @@ export async function POST(req: Request) {
 		}
 		return Response.json({ success: true, result: video }, { status: 200 });
 	} catch (error) {
-		console.log('Error removing background: ', error);
+		console.log('Error generating captions: ', error);
 		return Response.json(
-			{ success: false, error: 'Error removing background.' },
+			{ success: false, error: 'Error generating captions.' },
 			{ status: 500 }
 		);
 	}

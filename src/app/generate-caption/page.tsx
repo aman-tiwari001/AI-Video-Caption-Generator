@@ -6,6 +6,8 @@ import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import { FontEnum, SubtitlePositionEnum } from '@/validators';
 import { Font, SubtitlesPosition, VideoCaptionConfig } from '@/types/video';
+import { DownloadIcon } from 'lucide-react';
+import Link from 'next/link';
 
 const GenerateCaptionPage = () => {
 	const [videoUrl, setVideoUrl] = useState<string>('');
@@ -69,8 +71,16 @@ const GenerateCaptionPage = () => {
 		}
 	};
 
+	const scrollToTop = () => {
+		window.scrollTo({
+			top: 0,
+			behavior: 'smooth',
+		});
+	};
+
 	const handlePolling = async (replicateId: string) => {
 		setProcessingVideo(true);
+		scrollToTop();
 		const intervalId = setInterval(() => {
 			fetchVideoStatus(replicateId, () => clearInterval(intervalId));
 		}, 5000);
@@ -116,12 +126,15 @@ const GenerateCaptionPage = () => {
 	};
 
 	return (
-		<div className='flex min-h-[calc(100vh-100px)] w-full justify-center gap-x-60 items-start mt-[100px]'>
-			<div className='rounded-xl p-10 max-md:w-[90%] w-[40%] bg-white shadow-md border'>
+		<div className='flex flex-wrap h-[calc(100vh-100px)] w-full justify-center gap-x-16 items-start mt-[100px] max-md:overflow-auto overflow-y-hidden'>
+			<div className='rounded-xl px-5 py-7 max-md:w-[90%] w-[40%] bg-white shadow-md border'>
 				<h1 className='text-3xl text-grad mb-10 text-center'>
 					Generate Caption
 				</h1>
-				<form className='flex flex-col gap-5' onSubmit={handleProcessVideo}>
+				<form
+					className='flex flex-col gap-5 overflow-y-auto max-h-[65vh] scroll-m-4 px-3'
+					onSubmit={handleProcessVideo}
+				>
 					<label>
 						Upload Video: <span className='text-red-600'>*</span>
 						<FileUploaderMinimal
@@ -171,10 +184,11 @@ const GenerateCaptionPage = () => {
 							value={formData.fontsize}
 							onChange={handleChange}
 						/>
+						<p className='text-sm text-gray-500'>Note: Size 7 is good for videos, 4 is good for reels</p>
 					</label>
 
 					<label className='flex flex-col'>
-						Color:
+						Font Color:
 						<input
 							type='text'
 							name='color'
@@ -241,7 +255,7 @@ const GenerateCaptionPage = () => {
 					</label>
 
 					<label className='flex flex-col'>
-						Opacity:
+						Subtitle Background Opacity:
 						<input
 							type='number'
 							step='0.1'
@@ -259,6 +273,10 @@ const GenerateCaptionPage = () => {
 							value={formData.MaxChars}
 							onChange={handleChange}
 						/>
+						<p className='text-sm text-gray-500'>
+							Note: Max characters space for subtitles. 20 is good for videos, 10 is
+							good for reels
+						</p>
 					</label>
 					<div className='flex flex-col gap-4'>
 						<div className='flex items-start gap-2'>
@@ -350,27 +368,41 @@ const GenerateCaptionPage = () => {
 				</form>
 			</div>
 			{processingVideo ? (
-				<div className='my-10'>
-					<Image
-						className='mx-auto mb-1 text-center animate-spin'
-						src={'/loader.png'}
-						alt='loader'
-						height={67}
-						width={67}
-					/>
-					<p className='text-xl'>Processing</p>
+				<div className='h-[75vh] flex items-center justify-center'>
+					<div>
+						<Image
+							className='mx-auto mb-3 text-center animate-spin'
+							src={'/loader.png'}
+							alt='loader'
+							height={64}
+							width={64}
+						/>
+						<p className='text-xl'>Processing</p>
+					</div>
 				</div>
 			) : (
-				(outputVideo || outputTranscript) && (
-					<div className=''>
+				(outputTranscript || outputVideo) && (
+					<div>
 						{outputVideo && (
-							<div className=''>
+							<div className='mb-5 relative'>
+								<Link
+									href={outputVideo.replace(
+										'/upload/',
+										'/upload/fl_attachment/'
+									)}
+									className='absolute top-0 right-0 text-white rounded-lg cursor-pointer z-40'
+								>
+									<DownloadIcon
+										className='bg-blue-500 p-1 text-white rounded-xl'
+										size={40}
+									/>
+								</Link>
 								<h2 className='text-xl font-bold'>Output Video:</h2>
-								<video src={outputVideo} controls className='my-3 rounded-xl' />
+								<video src={outputVideo} controls className='my-4 rounded-xl' />
 							</div>
 						)}
 						{outputTranscript && (
-							<div className=''>
+							<div className='my-2'>
 								<h2 className='text-xl font-bold mb-3'>Output Transcript:</h2>
 								<a
 									href={outputTranscript.replace(
@@ -379,7 +411,6 @@ const GenerateCaptionPage = () => {
 									)}
 									download='download'
 									className='btn-primary'
-									target='_blank'
 								>
 									Download Transcript
 								</a>

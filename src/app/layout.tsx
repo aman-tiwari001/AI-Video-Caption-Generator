@@ -6,7 +6,7 @@ import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
 	title: 'AI Video Caption Generator',
-	description: 'AI-powered video background removal tool',
+	description: 'AI-powered video captioner tool',
 };
 
 export default function RootLayout({

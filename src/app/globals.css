@@ -115,3 +115,20 @@ input,
 select {
 	@apply bg-white px-3 py-2 rounded-lg border border-gray-400  active:outline-[#EF527A] focus:outline-[#EF527A];
 }
+
+
+*::-webkit-scrollbar {
+	width: 10px;
+	height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+	background: #f1f1f1;
+	border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: #EF527A;
+	border-radius: 10px;
+	border: 2px solid transparent;
+}

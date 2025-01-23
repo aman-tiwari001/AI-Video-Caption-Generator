@@ -9,7 +9,7 @@ const Navbar = () => {
 	const [showMobileNav, setShowMobileNav] = useState(false);
 
 	return (
-		<nav className='max-md:px-2 flex justify-between backdrop-blur-md items-center px-4 py-3 fixed top-0 w-full'>
+		<nav className='max-md:px-2 flex justify-between backdrop-blur-md items-center px-4 py-3 fixed top-0 w-full z-50'>
 			<Link href={'/'}>
 				<div className='flex gap-2'>
 					<Wand2Icon className='max-md:w-5' />
