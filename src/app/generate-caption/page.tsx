@@ -59,6 +59,7 @@ const GenerateCaptionPage = () => {
 			console.log('video fetched data -> ', data);
 			if (data.result.outputVideoUrl || data.result.outputTranscriptUrl) {
 				cleanUp();
+				toast.success('Video processed successfully!');
 				setProcessingVideo(false);
 				setOutputVideo(data.result.outputVideoUrl);
 				setOutputTranscript(data.result.outputTranscriptUrl);
@@ -115,7 +116,7 @@ const GenerateCaptionPage = () => {
 	};
 
 	return (
-		<div className='flex min-h-[calc(100vh-100px)] w-full flex-col items-center mt-[100px]'>
+		<div className='flex min-h-[calc(100vh-100px)] w-full justify-center gap-x-60 items-start mt-[100px]'>
 			<div className='rounded-xl p-10 max-md:w-[90%] w-[40%] bg-white shadow-md border'>
 				<h1 className='text-3xl text-grad mb-10 text-center'>
 					Generate Caption
@@ -360,22 +361,32 @@ const GenerateCaptionPage = () => {
 					<p className='text-xl'>Processing</p>
 				</div>
 			) : (
-				<div className='mt-10 flex flex-wrap w-full items-center justify-center gap-10'>
-					{outputVideo && (
-						<div className='w-[45%]'>
-							<h2 className='text-xl font-bold'>Output Video:</h2>
-							<video src={outputVideo} controls className='my-3 rounded-xl' />
-						</div>
-					)}
-					{outputTranscript && (
-						<div className='w-[45%]'>
-							<h2 className='text-xl font-bold'>Output Transcript:</h2>
-							<a href={outputTranscript} download="download" target='_blank'>
-								Download Transcript
-							</a>
-						</div>
-					)}
-				</div>
+				(outputVideo || outputTranscript) && (
+					<div className=''>
+						{outputVideo && (
+							<div className=''>
+								<h2 className='text-xl font-bold'>Output Video:</h2>
+								<video src={outputVideo} controls className='my-3 rounded-xl' />
+							</div>
+						)}
+						{outputTranscript && (
+							<div className=''>
+								<h2 className='text-xl font-bold mb-3'>Output Transcript:</h2>
+								<a
+									href={outputTranscript.replace(
+										'/upload/',
+										'/upload/fl_attachment/'
+									)}
+									download='download'
+									className='btn-primary'
+									target='_blank'
+								>
+									Download Transcript
+								</a>
+							</div>
+						)}
+					</div>
+				)
 			)}
 		</div>
 	);

@@ -39,7 +39,7 @@ const Navbar = () => {
 				</Link>
 				<SignedOut>
 					<div className='btn-primary border-2 border-black'>
-						<SignInButton forceRedirectUrl={'/remove-bg'} />
+						<SignInButton forceRedirectUrl={'/generate-caption'} />
 					</div>
 				</SignedOut>
 				<SignedIn>
@@ -48,21 +48,21 @@ const Navbar = () => {
 					</div>
 				</SignedIn>
 				<div className='hidden max-md:flex flex-col items-center gap-2'>
-					<MenuIcon size={40} cursor={'pointer'} onClick={() => setShowMobileNav(!showMobileNav)} />
+					<MenuIcon
+						size={40}
+						cursor={'pointer'}
+						onClick={() => setShowMobileNav(!showMobileNav)}
+					/>
 					{showMobileNav && (
 						<div className='rounded-xl border absolute body-bg-grad top-20 right-2 w-[90%] shadow-2xl p-2'>
-							<Link
-								href='/generate-caption'
-							>
+							<Link href='/generate-caption'>
 								<div className='flex font-semibold items-center hover:bg-white px-2 rounded-lg py-3 gap-1'>
 									<CaptionsIcon className='max-md:w-5' />
 									Generate Caption
 								</div>
 							</Link>
 							<hr className='bg-white text-white' />
-							<Link
-								href='/history'
-							>
+							<Link href='/history'>
 								<div className='flex font-semibold items-center hover:bg-white px-2 rounded-lg py-3 gap-1'>
 									<HistoryIcon className='max-md:w-5' />
 									History

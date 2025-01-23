@@ -20,12 +20,12 @@ const Home = () => {
 					Generate captioned videos with our cutting-edge AI technology
 				</p>
 				<div>
-          <div className='flex btn-primary w-36 mx-auto justify-center items-center gap-1'>
-            <SignUpButton forceRedirectUrl={'/remove-bg'}>
-              Get Started
-            </SignUpButton>
-            <ArrowRight className='h-4 w-4' />
-          </div>
+					<div className='flex btn-primary w-36 mx-auto justify-center items-center gap-1'>
+						<SignUpButton forceRedirectUrl={'/generate-caption'}>
+							Get Started
+						</SignUpButton>
+						<ArrowRight className='h-4 w-4' />
+					</div>
 				</div>
 			</section>
 
@@ -40,9 +40,7 @@ const Home = () => {
 				<div className='text-center space-y-2 bg-grad py-8 rounded-xl'>
 					<Zap className='mx-auto h-12 w-12 text-white' />
 					<h2 className='text-xl font-semibold text-white'>Fast Processing</h2>
-					<p className='text-gray-100'>
-						Get your video captioned in seconds
-					</p>
+					<p className='text-gray-100'>Get your video captioned in seconds</p>
 				</div>
 				<div className='text-center space-y-2 bg-grad py-8 rounded-xl'>
 					<History className='mx-auto h-12 w-12 text-white' />
