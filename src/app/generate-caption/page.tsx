@@ -20,7 +20,7 @@ const GenerateCaptionPage = () => {
 	const [formData, setFormData] = useState({
 		font: Font.PoppinsBold,
 		color: 'white',
-		kerning: -5,
+		kerning: 0,
 		opacity: 0,
 		MaxChars: 20,
 		fontsize: 7,

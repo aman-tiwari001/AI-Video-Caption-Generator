@@ -12,6 +12,8 @@ export async function GET() {
 				{ status: 401 }
 			);
 		}
+		const u = await UserModel.findOne({ clerkId: userId });
+		console.log('userId -> ', u);
 		const user = await UserModel.findOne({ clerkId: userId }).populate(
 			'videos'
 		);
