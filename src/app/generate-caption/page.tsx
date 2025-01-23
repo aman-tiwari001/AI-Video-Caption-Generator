@@ -5,6 +5,7 @@ import { FormEvent, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import { FontEnum, SubtitlePositionEnum } from '@/validators';
+import { Font, SubtitlesPosition, VideoCaptionConfig } from '@/types/video';
 
 const GenerateCaptionPage = () => {
 	const [videoUrl, setVideoUrl] = useState<string>('');
@@ -12,9 +13,10 @@ const GenerateCaptionPage = () => {
 	const [outputVideo, setOutputVideo] = useState<string>('');
 	const [loading, setLoading] = useState<boolean>(false);
 	const [processingVideo, setProcessingVideo] = useState<boolean>(false);
+	const [outputTranscript, setOutputTranscript] = useState<string>('');
 
 	const [formData, setFormData] = useState({
-		font: FontEnum[2],
+		font: Font.PoppinsBold,
 		color: 'white',
 		kerning: -5,
 		opacity: 0,
@@ -25,10 +27,8 @@ const GenerateCaptionPage = () => {
 		stroke_color: 'black',
 		stroke_width: 2.6,
 		right_to_left: false,
-		subs_position: SubtitlePositionEnum[0],
+		subs_position: SubtitlesPosition.Bottom75,
 		highlight_color: 'yellow',
-		video_file_input: '',
-		transcript_file_input: '',
 		output_transcript: false,
 	});
 
@@ -38,7 +38,12 @@ const GenerateCaptionPage = () => {
 		const { name, value, type, checked } = e.target as HTMLInputElement;
 		setFormData((prevData) => ({
 			...prevData,
-			[name]: type === 'checkbox' ? checked : value,
+			[name]:
+				type === 'checkbox'
+					? checked
+					: type === 'number'
+					? Number(value)
+					: value,
 		}));
 	};
 
@@ -52,10 +57,11 @@ const GenerateCaptionPage = () => {
 			});
 			const data = await response.json();
 			console.log('video fetched data -> ', data);
-			if (data.result.outputVideoUrl) {
+			if (data.result.outputVideoUrl || data.result.outputTranscriptUrl) {
 				cleanUp();
 				setProcessingVideo(false);
 				setOutputVideo(data.result.outputVideoUrl);
+				setOutputTranscript(data.result.outputTranscriptUrl);
 			}
 		} catch (error) {
 			console.log('Error fetching video status: ', error);
@@ -75,23 +81,26 @@ const GenerateCaptionPage = () => {
 			toast.error('Please upload a video!');
 			return;
 		}
-		console.log('formData-> ', {
-			...formData,
-			video_file_input: videoUrl,
-			transcript_file_input: transcriptUrl,
-		});
+
+		console.log('formData-> ', formData);
+
 		try {
 			setLoading(true);
+			let bodyData: VideoCaptionConfig = {
+				...formData,
+				video_file_input: videoUrl,
+			};
+
+			if (transcriptUrl) {
+				bodyData = { ...bodyData, transcript_file_input: transcriptUrl };
+			}
+
 			const response = await fetch('/api/generate-caption', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({
-					...formData,
-					video_file_input: videoUrl,
-					transcript_file_input: transcriptUrl,
-				}),
+				body: JSON.stringify(bodyData),
 			});
 			const data = await response.json();
 			toast.success('Request queued!');
@@ -351,19 +360,22 @@ const GenerateCaptionPage = () => {
 					<p className='text-xl'>Processing</p>
 				</div>
 			) : (
-				outputVideo &&
-				videoUrl && (
-					<div className='mt-10 flex flex-wrap w-full items-center justify-center gap-10'>
-						<div className='w-[45%]'>
-							<h2 className='text-xl font-bold'>Input Video:</h2>
-							<video src={videoUrl} controls className='my-3 rounded-xl' />
-						</div>
+				<div className='mt-10 flex flex-wrap w-full items-center justify-center gap-10'>
+					{outputVideo && (
 						<div className='w-[45%]'>
 							<h2 className='text-xl font-bold'>Output Video:</h2>
 							<video src={outputVideo} controls className='my-3 rounded-xl' />
 						</div>
-					</div>
-				)
+					)}
+					{outputTranscript && (
+						<div className='w-[45%]'>
+							<h2 className='text-xl font-bold'>Output Transcript:</h2>
+							<a href={outputTranscript} download="download" target='_blank'>
+								Download Transcript
+							</a>
+						</div>
+					)}
+				</div>
 			)}
 		</div>
 	);

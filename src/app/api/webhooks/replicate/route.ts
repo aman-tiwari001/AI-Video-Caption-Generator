@@ -5,20 +5,29 @@ import VideoModel from '@/models/video';
 //Webhook endpoint to receive the output video URL from Replicate
 export async function POST(req: Request) {
 	try {
-    await connectToDb();
-		const { id, output } = await req.json();
-    console.log('job id-> ', id);
-    console.log('output vid-> ', output);
-		if (!id || !output) {
+		console.log('Webhook called');
+		await connectToDb();
+		const { id, output, input } = await req.json();
+		console.log('job id-> ', id);
+		console.log('output vid-> ', output);
+		if (!id || !output.length) {
 			return Response.json(
 				{ success: false, error: 'Missing required fields.' },
 				{ status: 400 }
 			);
 		}
-    const cloudinaryUrl = await uploadToCloudinary(output, 'video');
+		let cloudinaryVidUrl = '';
+		let cloudinarySubsUrl = '';
+		if (input.output_video)
+			cloudinaryVidUrl = await uploadToCloudinary(output[0], 'video');
+		if (input.output_transcript)
+			cloudinarySubsUrl = await uploadToCloudinary(output[1], 'auto');
 		const video = await VideoModel.findOneAndUpdate(
 			{ replicateId: id },
-			{ outputVideoUrl: cloudinaryUrl }
+			{
+				outputVideoUrl: cloudinaryVidUrl,
+				outputTranscriptUrl: cloudinarySubsUrl,
+			}
 		);
 		if (!video) {
 			return Response.json(

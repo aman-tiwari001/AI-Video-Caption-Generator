@@ -41,8 +41,8 @@ export const VideoCaptionConfigSchema = z
 		right_to_left: z.boolean().optional(),
 		subs_position: z.enum(SubtitlePositionEnum),
 		highlight_color: z.string().optional(),
-		video_file_input: z.string().min(1, 'Input video file is required'),
+		video_file_input: z.string().url().min(1, 'Input video file is required'),
 		output_transcript: z.boolean().optional(),
-		transcript_file_input: z.string().optional(),
+		transcript_file_input: z.string().url().optional(),
 	})
 	.strict();

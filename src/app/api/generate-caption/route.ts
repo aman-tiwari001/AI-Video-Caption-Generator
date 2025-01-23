@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 		const validatedInput = VideoCaptionConfigSchema.safeParse(inputData);
 		if (!validatedInput.success) {
 			return Response.json(
-				{ success: false, error: 'Invalid input data.' },
+				{ success: false, error: validatedInput.error },
 				{ status: 400 }
 			);
 		}
@@ -27,9 +27,10 @@ export async function POST(req: Request) {
 			'video'
 		);
 		// Run the Replicate video matting model
-		const output = await submitVideoToReplicate(
-			validatedInput.data as VideoCaptionConfig
-		);
+		const output = await submitVideoToReplicate({
+			...validatedInput.data,
+			video_file_input: cloudinaryUrl,
+		} as VideoCaptionConfig);
 		console.log('op from replicate-> ', output);
 		// Create a document in Videos collection
 		const { userId } = await auth();
