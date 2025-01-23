@@ -5,26 +5,24 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
-	title: 'AI Video Caption Generator',
-	description: 'AI-powered video captioner tool',
+  title: 'AI Video Caption Generator',
+  description: 'AI-powered video captioner tool',
 };
 
 export default function RootLayout({
-	children,
+  children,
 }: Readonly<{
-	children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-	return (
-		<ClerkProvider>
-			<html lang='en' className='scrollbar-hide'>
-				<body
-					className={`antialiased`}
-				>
-					<Toaster />
-					<Navbar />
-					{children}
-				</body>
-			</html>
-		</ClerkProvider>
-	);
+  return (
+    <ClerkProvider>
+      <html lang="en" className="scrollbar-hide">
+        <body className={`antialiased`}>
+          <Toaster />
+          <Navbar />
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
+  );
 }
